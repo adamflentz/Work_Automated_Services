@@ -1,4 +1,16 @@
-function ProcessRequest($context, $key){
+#####################################################################
+#
+# Name: Wart.ps1
+# Purpose: Listen for encrypted JSON file over a network.  
+# Decrypt message with private key and run task based on JSON.
+# Author: Adam Lentz
+# Version 1.0
+# NOTES: requires Powershell >=3.0
+######################################################################
+
+function ProcessRequest($context, $key)
+{
+	# Grabs message body and sends to decryption function
 	$postdata = $context.Request.InputStream
 	$body = New-Object System.IO.StreamReader ($postdata)
 	$msg = $body.ReadToEnd()
@@ -10,6 +22,8 @@ function ProcessRequest($context, $key){
 
 function Decrypt-String($key, $Encrypted)
 {
+	# Decrypts message using AES, private key, and IV sent through message
+
 	# If the value in the Encrypted is a string, convert it to Base64
 	if($Encrypted -is [string]){
 		$Encrypted = [Convert]::FromBase64String($Encrypted)
@@ -49,12 +63,15 @@ function Decrypt-String($key, $Encrypted)
 }
 
 function ParseJSON($message) {
+	# Parses JSON and finds correct powershell job
+
 	$message = $message.trim([char]0)
 	Write-Host $type
     $jsonFile = ConvertFrom-Json $message
     $params = $jsonFile.params
     $verb = $jsonFile.verb
     if($verb -eq "upload") {
+		# Upload task
 		$uri = $params.host
         $env =  $params.env
         $local_file = $params.local_file
@@ -83,6 +100,7 @@ function ParseJSON($message) {
     }
 
 	if($verb -eq "download") {
+		# Download task
 		$uri = $params.host
         $env =  $params.env
         $file = $params.file_name
@@ -116,6 +134,7 @@ function ParseJSON($message) {
     $process
 }
 
+# Creates key and http listener.  Should only be https when it goes live, remove http.
 $key = "EHgYGBpM2HkRxaOa8hcWvL5NeJPzTiqH"
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add('http://+:8080/')
@@ -123,13 +142,15 @@ $listener.Prefixes.Add('https://+:8000/')
 $listener.Start()
 
 try {
-  Write-Host "Listening on port, press CTRL+C to cancel"
-  $context = $listener.GetContext()
+	# Waits for incoming encrypted message
+	Write-Host "Listening on port, press CTRL+C to cancel"
+	$context = $listener.GetContext()
 }
 catch {
     Write-Error $_          
 }
 finally{
+	# Catches response and sends it to parse
 	$URL = $context.Request.Url
 	$response = $context.Response
 	$decryptedMessage = ProcessRequest $context $key
