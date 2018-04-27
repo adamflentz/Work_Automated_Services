@@ -16,7 +16,7 @@ function ProcessRequest($context, $key)
 	$msg = $body.ReadToEnd()
 	$body.Close()
 	Write-Host $msg
-	$decryptbody = Decrypt-String $key "VwnPmjYa6A8SZwhgqfpqferM8Kxa/RFKsun7jT3m/feNrRT67S2e2+dE7ZLQQoQG/hnZSp7FKsXacMz8Yt223JaaHuJwldJrsc8eWtxJuF0WvB1wI14ur9bPlXyTeHTE6OeRNa8sEIYRvdzuMaNhzOFamPPFPBw/Fl/eMZh5J26ng3YsCtg11dtuRgkAUdHGfOqcM5s6BHhmvuF3ZDA4WP5ul3G/FthNxUUJa+Kn8SBSwXgRr9mEuGrgW7T0Be7Y3HQKLvlH+mEVmcdPjTv+DyguhQAVhIkohdxTKXLHCTki0vP9NxMKJ25Racd/IneWAeSM9wJFflsgmy8xSBMtayjQ4DZ41SMMWo6fjRDARk7IGPmDmPxud8ty14o6W8pw"
+	$decryptbody = Decrypt-String $key $msg
 	$decryptbody
 }
 
